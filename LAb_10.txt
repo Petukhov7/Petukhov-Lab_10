@@ -1,0 +1,117 @@
+﻿***СЕТАП***
+
+\! chcp 1251
+
+
+CREATE TABLE students(
+id_student int NOT NULL PRIMARY KEY,
+Name varchar(20),
+passport_Series int NOT NULL CHECK (passport_Series between 1000 and 9999),
+passport_ID int NOT NULL CHECK (passport_ID between 100000 and 999999),
+Constraint wow unique(passport_Series,passport_ID));
+
+CREATE TABLE subjects(
+id_subject int NOT NULL PRIMARY KEY,
+name_subject varchar(20));
+
+CREATE TABLE progress(
+id_progress int NOT NULL PRIMARY KEY,
+id_student int,
+CONSTRAINT FK_id_student FOREIGN KEY(id_student) REFERENCES Students(id_student) Match full ON DELETE CASCADE,
+id_subject int,
+CONSTRAINT FK_id_subject FOREIGN KEY(id_subject) REFERENCES Subjects(id_subject) Match full ON DELETE CASCADE,
+mark int,
+CONSTRAINT mark CHECK (mark>=2 and mark<=5));
+
+INSERT INTO students values
+(1, 'Артём', 1350, 937164),
+(2, 'Вова', 1352, 651749),
+(3, 'Коля', 1354, 369175),
+(4, 'Егор', 1387, 197402),
+(5, 'Никита', 1329, 710472);
+
+INSERT INTO subjects values
+(6, 'матем'),
+(7, 'физика'),
+(8, 'химия'),
+(9, 'англ');
+
+INSERT INTO progress values
+(10, 1, 6, 5),
+(11, 2, 6, 2),
+(12, 3, 6, 5),
+(13, 4, 6, 4),
+(14, 5, 6, 5),
+(15, 1, 7, 4),
+(16, 2, 7, 3),
+(17, 3, 7, 2),
+(18, 4, 7, 3),
+(19, 1, 8, 5),
+(20, 2, 8, 4),
+(21, 3, 8, 3),
+(22, 4, 8, 3),
+(23, 5, 8, 5),
+(24, 1, 9, 4),
+(25, 2, 9, 3),
+(26, 3, 9, 3),
+(27, 4, 9, 2),
+(28, 5, 9, 3);
+
+
+(19, 5, 7, 3),
+
+***ВЫВОДЫ ДАННЫХ***
+SELECT * FROM progress;
+SELECT * FROM subjects;
+SELECT * FROM students;
+\d students \d subjects \d progress
+
+
+***ЗАДАНИЯ***
+Вывести предметы в порядке лучшего сдавания. Предмет который сдали лучше всех вывести первым затем другие в порядке убывания.
+
+SELECT name_subject, avg(mark) FROM subjects JOIN progress ON (subjects.id_subject=progress.id_subject) GROUP BY name_subject ORDER BY avg(mark) DESC;
+
+
+
+Cредний бал одинаковый и вывелось первым там где оценок больше.
+
+SELECT name_subject, avg(mark), COUNT(mark) FROM subjects JOIN progress ON (subjects.id_subject=progress.id_subject) GROUP BY name_subject ORDER BY avg(mark) DESC, COUNT(mark) DESC;
+
+
+
+Cредний бал одинаковый и вывелось первым там где оценок больше, при этом первый пропустить и вывести оставшиеся.
+
+SELECT name_subject, avg(mark), COUNT(mark) FROM subjects JOIN progress ON (subjects.id_subject=progress.id_subject) GROUP BY name_subject ORDER BY avg(mark) DESC, COUNT(mark) DESC OFFSET 1 ROWS FETCH NEXT 4 ROWS ONLY;
+
+Оценки по предметам
+(6, 'матем'), = 5 2 5 4 5  Ср= 4,2 
+(7, 'физика'), = 4 3 2 3  Ср= 3
+(8, 'химия'), = 5 4 3 3 5  Ср= 4
+(9, 'англ'); = 4 3 3 2 3  Ср= 3 
+
+
+
+
+
+
+
+
+
+Удаление студента из таблицы
+DELETE FROM students WHERE id_student = 2;
+
+Добавление студента в таблицу
+INSERT INTO students values
+(2, 'Вова', 1352, 651749);
+INSERT INTO progress values
+(11, 2, 6, 2);
+
+Средний балл определенного студента
+SELECT avg(Mark) FROM students JOIN progress ON (students.id_student=progress.id_student) WHERE (Name='Никита');
+
+Средний балл по определенному предмету
+SELECT avg(Mark) FROM subjects JOIN progress ON (subjects.id_subject=progress.id_subject) WHERE (name_subject='химия');
+
+Найти три премета, которые сдали наибольшее количество студентов;
+SELECT name_subject, COUNT(mark) FROM subjects JOIN progress ON (subjects.id_subject=progress.id_subject) WHERE (mark>3) GROUP BY name_subject ORDER BY COUNT(mark) desc limit 3;
